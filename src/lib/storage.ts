@@ -1,4 +1,4 @@
-import type { CatalogFilters, SavedKingdomSet } from "./types";
+import type { RandomizerPoolFilters, SavedKingdomSet } from "./types";
 
 const STORAGE_KEY = "dominion-card-viewer:saved-kingdoms";
 
@@ -34,7 +34,7 @@ function writeSavedKingdoms(sets: SavedKingdomSet[]) {
 export function saveKingdomSet(input: {
   name: string;
   cardIds: string[];
-  poolFilters?: CatalogFilters;
+  poolFilters?: RandomizerPoolFilters;
 }): SavedKingdomSet {
   const entry: SavedKingdomSet = {
     id: crypto.randomUUID(),

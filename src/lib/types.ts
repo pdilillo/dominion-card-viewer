@@ -44,6 +44,12 @@ export type CatalogFilters = {
   kingdomOnly?: boolean;
 };
 
+export type AttackPreference = "any" | "require" | "exclude";
+
+export type RandomizerPoolFilters = CatalogFilters & {
+  attackPreference?: AttackPreference;
+};
+
 export type CatalogData = {
   cards: DominionCard[];
   setsIndex: SetIndexEntry[];
@@ -56,5 +62,5 @@ export type SavedKingdomSet = {
   name: string;
   createdAt: string;
   cardIds: string[];
-  poolFilters?: CatalogFilters;
+  poolFilters?: RandomizerPoolFilters;
 };

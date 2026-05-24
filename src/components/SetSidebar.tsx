@@ -12,6 +12,8 @@ type Props = {
   onFamilyToggle: (family: string) => void;
   onEditionToggle: (edition: import("@/lib/types").Edition) => void;
   onClearSets: () => void;
+  title?: string;
+  setsSectionLabel?: string;
 };
 
 const EDITION_OPTIONS: import("@/lib/types").Edition[] = [
@@ -30,6 +32,8 @@ export function SetSidebar({
   onFamilyToggle,
   onEditionToggle,
   onClearSets,
+  title = "Filters",
+  setsSectionLabel = "Sets",
 }: Props) {
   const hasSelection =
     selectedSetIds.length > 0 ||
@@ -40,7 +44,7 @@ export function SetSidebar({
     <aside className="flex h-full w-72 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--surface)]">
       <div className="border-b border-[var(--border)] p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
-          Filters
+          {title}
         </h2>
       </div>
 
@@ -68,7 +72,7 @@ export function SetSidebar({
       </div>
 
       <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-2">
-        <p className="text-xs font-medium text-[var(--muted)]">Sets</p>
+        <p className="text-xs font-medium text-[var(--muted)]">{setsSectionLabel}</p>
         {hasSelection && (
           <button
             type="button"

@@ -16,9 +16,16 @@ import {
   saveKingdomSet,
   validateSavedKingdom,
 } from "@/lib/storage";
-import type { CatalogData, DominionCard, Edition, SavedKingdomSet } from "@/lib/types";
+import type {
+  AttackPreference,
+  CatalogData,
+  DominionCard,
+  Edition,
+  SavedKingdomSet,
+} from "@/lib/types";
 import { AppHeader } from "@/components/AppHeader";
 import { CardDetailModal } from "@/components/CardDetailModal";
+import { RandomizerFilterBar } from "@/components/RandomizerFilterBar";
 import { SavedKingdomsPanel } from "@/components/SavedKingdomsPanel";
 import { SetSidebar } from "@/components/SetSidebar";
 
@@ -33,6 +40,7 @@ export default function RandomizerPage() {
   const [selectedSetIds, setSelectedSetIds] = useState<string[]>([]);
   const [selectedFamilies, setSelectedFamilies] = useState<string[]>([]);
   const [selectedEditions, setSelectedEditions] = useState<Edition[]>([]);
+  const [attackPreference, setAttackPreference] = useState<AttackPreference>("any");
   const [gridZoom, setGridZoom] = useState(160);
   const [kingdomCards, setKingdomCards] = useState<DominionCard[]>([]);
   const [lockedIds, setLockedIds] = useState<string[]>([]);
@@ -48,8 +56,9 @@ export default function RandomizerPage() {
       setIds: selectedSetIds,
       families: selectedFamilies,
       editions: selectedEditions,
+      attackPreference,
     }),
-    [selectedSetIds, selectedFamilies, selectedEditions],
+    [selectedSetIds, selectedFamilies, selectedEditions, attackPreference],
   );
 
   const eligiblePool = useMemo(
@@ -72,25 +81,48 @@ export default function RandomizerPage() {
       setActiveSavedId(null);
 
       if (eligiblePool.length < KINGDOM_SIZE) {
+        const attackHint =
+          attackPreference === "exclude"
+            ? " No-attacks mode limits the pool further — try adding more expansions."
+            : "";
         setError(
-          `Need at least ${KINGDOM_SIZE} kingdom cards in the pool (currently ${eligiblePool.length}). Try selecting more expansions.`,
+          `Need at least ${KINGDOM_SIZE} kingdom cards in the pool (currently ${eligiblePool.length}). Try selecting more expansions.${attackHint}`,
+        );
+        return;
+      }
+
+      if (
+        attackPreference === "require" &&
+        !eligiblePool.some((card) => card.types.includes("Attack"))
+      ) {
+        setError(
+          "No Attack cards in the current pool. Add expansions with attacks or switch to Any.",
         );
         return;
       }
 
       const next = randomizeKingdom(eligiblePool, {
         lockedIds: options?.lockedIds ?? lockedIds,
+        attackPreference,
       });
       setKingdomCards(sortCards(next, "cost-asc"));
     },
-    [eligiblePool, lockedIds],
+    [eligiblePool, lockedIds, attackPreference],
   );
+
+  function applyPoolFilters(filters?: SavedKingdomSet["poolFilters"]) {
+    setSelectedSetIds(filters?.setIds ?? []);
+    setSelectedFamilies(filters?.families ?? []);
+    setSelectedEditions(filters?.editions ?? []);
+    setAttackPreference(filters?.attackPreference ?? "any");
+  }
 
   function handleLoadSaved(set: SavedKingdomSet) {
     const cards = resolveCardsById(data.cards, set.cardIds);
     setKingdomCards(sortCards(cards, "cost-asc"));
     setLockedIds([]);
     setActiveSavedId(set.id);
+    applyPoolFilters(set.poolFilters);
     setError(null);
     setShowSaveForm(false);
   }
@@ -129,6 +161,8 @@ export default function RandomizerPage() {
           selectedSetIds={selectedSetIds}
           selectedFamilies={selectedFamilies}
           selectedEditions={selectedEditions}
+          title="Kingdom pool"
+          setsSectionLabel="Sets & editions"
           onSetToggle={(id) => setSelectedSetIds((prev) => toggleInList(prev, id))}
           onFamilyToggle={(family) =>
             setSelectedFamilies((prev) => toggleInList(prev, family))
@@ -145,6 +179,28 @@ export default function RandomizerPage() {
 
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="space-y-3 border-b border-[var(--border)] bg-[var(--surface)] p-4">
+            <RandomizerFilterBar
+              families={data.families}
+              selectedFamilies={selectedFamilies}
+              selectedSetIds={selectedSetIds}
+              attackPreference={attackPreference}
+              poolCount={eligiblePool.length}
+              onFamilyToggle={(family) => {
+                setSelectedFamilies((prev) => toggleInList(prev, family));
+                setActiveSavedId(null);
+              }}
+              onAttackPreferenceChange={(value) => {
+                setAttackPreference(value);
+                setActiveSavedId(null);
+              }}
+              onClearSets={() => {
+                setSelectedSetIds([]);
+                setSelectedFamilies([]);
+                setSelectedEditions([]);
+                setActiveSavedId(null);
+              }}
+            />
+
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
@@ -171,9 +227,6 @@ export default function RandomizerPage() {
                   Save set
                 </button>
               )}
-              <span className="text-sm tabular-nums text-[var(--muted)]">
-                {eligiblePool.length} cards in pool
-              </span>
             </div>
 
             {showSaveForm && kingdomCards.length > 0 && (
@@ -241,10 +294,11 @@ export default function RandomizerPage() {
             <div className="flex min-w-0 flex-1 flex-col">
               {kingdomCards.length === 0 ? (
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center text-[var(--muted)]">
-                  <p>Select your expansions, then randomize a kingdom.</p>
+                  <p>Select expansions to pull from, then randomize a kingdom.</p>
                   <p className="max-w-md text-sm">
-                    Picks 10 kingdom cards with about two cards each from $2, $3,
-                    $4, $5, and $6+ — similar to stratified randomizer decks.
+                    Choose expansions above or in the sidebar, set your attack
+                    preference, then generate 10 cards with a balanced $2–$6+
+                    cost spread.
                   </p>
                 </div>
               ) : (

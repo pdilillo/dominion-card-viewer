@@ -1,5 +1,5 @@
 import { filterCards } from "./catalog";
-import type { CatalogFilters, DominionCard } from "./types";
+import type { AttackPreference, DominionCard, RandomizerPoolFilters } from "./types";
 
 export const KINGDOM_SIZE = 10;
 
@@ -19,13 +19,21 @@ export function getCostBucket(card: DominionCard): CostBucket | null {
   return "6+";
 }
 
+export function isAttackCard(card: DominionCard): boolean {
+  return card.types.includes("Attack");
+}
+
 export function getEligibleKingdomPool(
   cards: DominionCard[],
-  filters: CatalogFilters,
+  filters: RandomizerPoolFilters,
 ): DominionCard[] {
-  return filterCards(cards, { ...filters, kingdomOnly: true }).filter(
+  let pool = filterCards(cards, { ...filters, kingdomOnly: true }).filter(
     (card) => card.cost !== null,
   );
+  if (filters.attackPreference === "exclude") {
+    pool = pool.filter((card) => !isAttackCard(card));
+  }
+  return pool;
 }
 
 function shuffle<T>(items: T[]): T[] {
@@ -67,6 +75,7 @@ function countByBucket(cards: DominionCard[]): Map<CostBucket, number> {
 export type RandomizeOptions = {
   count?: number;
   lockedIds?: string[];
+  attackPreference?: AttackPreference;
 };
 
 /**
@@ -123,7 +132,42 @@ export function randomizeKingdom(
     addCard(card);
   }
 
-  return selected.slice(0, count);
+  const result = selected.slice(0, count);
+  return ensureAttackPreference(result, available, lockedIds, options.attackPreference);
+}
+
+function ensureAttackPreference(
+  selected: DominionCard[],
+  pool: DominionCard[],
+  lockedIds: Set<string>,
+  preference: AttackPreference = "any",
+): DominionCard[] {
+  if (preference !== "require") return selected;
+
+  const hasAttack = selected.some(isAttackCard);
+  if (hasAttack) return selected;
+
+  const attacksInPool = pool.filter(
+    (card) => isAttackCard(card) && !selected.some((c) => c.id === card.id),
+  );
+  if (attacksInPool.length === 0) return selected;
+
+  const replaceIndex = selected.findIndex(
+    (card) => !lockedIds.has(card.id) && !isAttackCard(card),
+  );
+  if (replaceIndex === -1) return selected;
+
+  const replaced = selected[replaceIndex];
+  const replacedBucket = getCostBucket(replaced);
+  const sameBucket = attacksInPool.filter(
+    (card) => getCostBucket(card) === replacedBucket,
+  );
+  const replacement = pickRandom(sameBucket.length > 0 ? sameBucket : attacksInPool);
+  if (!replacement) return selected;
+
+  const next = [...selected];
+  next[replaceIndex] = replacement;
+  return next;
 }
 
 export function summarizeCostSpread(cards: DominionCard[]): Record<CostBucket, number> {
