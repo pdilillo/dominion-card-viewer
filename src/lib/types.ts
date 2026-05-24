@@ -50,3 +50,11 @@ export type CatalogData = {
   families: SetFamily[];
   allTypes: string[];
 };
+
+export type SavedKingdomSet = {
+  id: string;
+  name: string;
+  createdAt: string;
+  cardIds: string[];
+  poolFilters?: CatalogFilters;
+};

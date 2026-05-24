@@ -3,6 +3,7 @@
 import type { DominionCard } from "@/lib/types";
 import { editionLabel, formatCost, uniqueEditionsForCard } from "@/lib/catalog";
 import Image from "next/image";
+import { TypeBadge } from "./TypeBadge";
 
 type Props = {
   card: DominionCard;
@@ -39,6 +40,9 @@ export function CardTile({ card, tileWidth, onClick }: Props) {
           <span className="rounded bg-[var(--bg)] px-1.5 py-0.5 text-[10px] tabular-nums text-[var(--accent)]">
             {formatCost(card)}
           </span>
+          {card.types.map((type) => (
+            <TypeBadge key={type} type={type} size="xs" />
+          ))}
           {editions.slice(0, 2).map((e) => (
             <span
               key={e}

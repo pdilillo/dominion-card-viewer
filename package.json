@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "build:catalog": "tsx scripts/build-catalog.ts",
-    "sync:art": "tsx scripts/sync-card-art.ts"
+    "sync:art": "tsx scripts/sync-card-art.ts",
+    "sync:symbols": "tsx scripts/sync-card-symbols.ts"
   },
   "dependencies": {
     "next": "^15.5.0",

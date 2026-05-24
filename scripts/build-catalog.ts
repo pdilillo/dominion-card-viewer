@@ -176,7 +176,7 @@ async function main() {
       cost: dz?.cost ?? tabsCost.cost,
       potionCost: tabsCost.potionCost,
       types,
-      description: dz?.description?.replace(/\{\{[^}]+\}\}/g, "").trim() ?? "",
+      description: dz?.description?.trim() ?? "",
       isKingdomCard: dz?.isKingdomCard ?? tab.randomizer !== false,
       image: `/card-art/${imageFile}`,
       wikiUrl: dz?.wikiUrl,

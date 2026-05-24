@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import type { DominionCard } from "@/lib/types";
 import { editionLabel, formatCost } from "@/lib/catalog";
+import { CardDescription } from "./CardDescription";
+import { TypeBadge } from "./TypeBadge";
 import { ZoomableImage } from "./ZoomableImage";
 
 type Props = {
@@ -48,10 +50,16 @@ export function CardDetailModal({ card, cards, onClose, onNavigate }: Props) {
             <div>
               <h2 className="text-lg font-bold">{card.name}</h2>
               <p className="mt-1 text-sm text-[var(--accent)]">{formatCost(card)}</p>
-              <p className="mt-1 text-xs text-[var(--muted)]">
-                {card.types.join(" · ")}
-                {card.isKingdomCard ? " · Kingdom" : ""}
-              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-1">
+                {card.types.map((type) => (
+                  <TypeBadge key={type} type={type} size="xs" />
+                ))}
+                {card.isKingdomCard && (
+                  <span className="rounded-full border border-[var(--border)] px-1 py-0.5 text-[9px] text-[var(--muted)]">
+                    Kingdom
+                  </span>
+                )}
+              </div>
             </div>
             <button
               type="button"
@@ -65,9 +73,7 @@ export function CardDetailModal({ card, cards, onClose, onNavigate }: Props) {
 
           <div className="flex-1 overflow-y-auto p-4">
             {card.description && (
-              <p className="mb-4 whitespace-pre-wrap text-sm leading-relaxed text-[var(--text)]">
-                {card.description}
-              </p>
+              <CardDescription description={card.description} className="mb-4" />
             )}
 
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">

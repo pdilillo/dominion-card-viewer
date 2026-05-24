@@ -1,6 +1,7 @@
 "use client";
 
 import type { SortField } from "@/lib/types";
+import { TypeBadge } from "./TypeBadge";
 
 type Props = {
   search: string;
@@ -76,23 +77,14 @@ export function FilterBar({
 
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-[var(--muted)]">Types:</span>
-        {allTypes.map((type) => {
-          const active = selectedTypes.includes(type);
-          return (
-            <button
-              key={type}
-              type="button"
-              onClick={() => onTypeToggle(type)}
-              className={`rounded-full border px-2 py-0.5 text-xs transition ${
-                active
-                  ? "border-[var(--accent)] bg-[var(--accent)]/20 text-[var(--accent)]"
-                  : "border-[var(--border)] text-[var(--muted)] hover:border-[var(--accent-dim)]"
-              }`}
-            >
-              {type}
-            </button>
-          );
-        })}
+        {allTypes.map((type) => (
+          <TypeBadge
+            key={type}
+            type={type}
+            active={selectedTypes.includes(type)}
+            onClick={() => onTypeToggle(type)}
+          />
+        ))}
       </div>
 
       <div className="flex items-center gap-3">
