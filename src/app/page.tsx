@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import catalogData from "@/data/catalog.json";
 import { filterCards, sortCards } from "@/lib/catalog";
 import type { CatalogData, DominionCard, Edition, SortField } from "@/lib/types";
+import { AppHeader } from "@/components/AppHeader";
 import { CardDetailModal } from "@/components/CardDetailModal";
 import { CardGrid } from "@/components/CardGrid";
 import { FilterBar } from "@/components/FilterBar";
@@ -50,12 +51,7 @@ export default function DominionViewer() {
 
   return (
     <div className="flex h-screen flex-col">
-      <header className="border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-        <h1 className="text-lg font-bold text-[var(--accent)]">Dominion Card Viewer</h1>
-        <p className="text-xs text-[var(--muted)]">
-          Browse {data.cards.length} cards across all expansions
-        </p>
-      </header>
+      <AppHeader subtitle={`Browse ${data.cards.length} cards across all expansions`} />
 
       <div className="flex min-h-0 flex-1">
         <SetSidebar

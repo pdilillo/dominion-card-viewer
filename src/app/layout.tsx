@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Dominion Card Viewer",
-  description: "Browse all Dominion cards by set, edition, cost, and type",
+  description: "Browse Dominion cards and randomize balanced 10-card kingdoms",
 };
 
 export default function RootLayout({
