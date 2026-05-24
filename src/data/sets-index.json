@@ -1,0 +1,296 @@
+[
+  {
+    "setId": "adventures",
+    "setName": "Adventures (1st Edition)",
+    "family": "Adventures",
+    "edition": "1",
+    "cardCount": 58
+  },
+  {
+    "setId": "alchemy",
+    "setName": "Alchemy (1st Edition)",
+    "family": "Alchemy",
+    "edition": "1",
+    "cardCount": 13
+  },
+  {
+    "setId": "allies",
+    "setName": "Allies (1st Edition)",
+    "family": "Allies",
+    "edition": "1",
+    "cardCount": 78
+  },
+  {
+    "setId": "animals",
+    "setName": "Animals (1st Edition)",
+    "family": "Animals",
+    "edition": "1",
+    "cardCount": 3
+  },
+  {
+    "setId": "base",
+    "setName": "Base (2nd Edition)",
+    "family": "Base",
+    "edition": "2",
+    "cardCount": 12
+  },
+  {
+    "setId": "cornucopia1stEdition",
+    "setName": "Cornucopia (1st Edition)",
+    "family": "Cornucopia",
+    "edition": "1",
+    "cardCount": 18
+  },
+  {
+    "setId": "cornucopia2ndEditionUpgrade",
+    "setName": "Cornucopia (2E Upgrade)",
+    "family": "Cornucopia",
+    "edition": "upgrade",
+    "cardCount": 11
+  },
+  {
+    "setId": "cornucopia1stEditionRemoved",
+    "setName": "Cornucopia (Removed from 2E)",
+    "family": "Cornucopia",
+    "edition": "removed",
+    "cardCount": 10
+  },
+  {
+    "setId": "cornucopiaAndGuilds2ndEdition",
+    "setName": "Cornucopia and Guilds (2nd Edition)",
+    "family": "Cornucopia and Guilds",
+    "edition": "2",
+    "cardCount": 32
+  },
+  {
+    "setId": "darkAges",
+    "setName": "Dark Ages (1st Edition)",
+    "family": "Dark Ages",
+    "edition": "1",
+    "cardCount": 42
+  },
+  {
+    "setId": "dominion1stEdition",
+    "setName": "Dominion (1st Edition)",
+    "family": "Dominion",
+    "edition": "1",
+    "cardCount": 34
+  },
+  {
+    "setId": "dominion2ndEditionUpgrade",
+    "setName": "Dominion (2E Upgrade)",
+    "family": "Dominion",
+    "edition": "upgrade",
+    "cardCount": 7
+  },
+  {
+    "setId": "dominion2ndEdition",
+    "setName": "Dominion (2nd Edition)",
+    "family": "Dominion",
+    "edition": "2",
+    "cardCount": 34
+  },
+  {
+    "setId": "dominion1stEditionRemoved",
+    "setName": "Dominion (Removed from 2E)",
+    "family": "Dominion",
+    "edition": "removed",
+    "cardCount": 6
+  },
+  {
+    "setId": "empires",
+    "setName": "Empires (1st Edition)",
+    "family": "Empires",
+    "edition": "1",
+    "cardCount": 68
+  },
+  {
+    "setId": "guilds1stEdition",
+    "setName": "Guilds (1st Edition)",
+    "family": "Guilds",
+    "edition": "1",
+    "cardCount": 13
+  },
+  {
+    "setId": "guilds2ndEditionUpgrade",
+    "setName": "Guilds (2E Upgrade)",
+    "family": "Guilds",
+    "edition": "upgrade",
+    "cardCount": 3
+  },
+  {
+    "setId": "guilds1stEditionRemoved",
+    "setName": "Guilds (Removed from 2E)",
+    "family": "Guilds",
+    "edition": "removed",
+    "cardCount": 3
+  },
+  {
+    "setId": "guilds-bigbox2-de",
+    "setName": "Guilds-bigbox2-de (1st Edition)",
+    "family": "Guilds-bigbox2-de",
+    "edition": "1",
+    "cardCount": 13
+  },
+  {
+    "setId": "hinterlands1stEdition",
+    "setName": "Hinterlands (1st Edition)",
+    "family": "Hinterlands",
+    "edition": "1",
+    "cardCount": 26
+  },
+  {
+    "setId": "hinterlands2ndEditionUpgrade",
+    "setName": "Hinterlands (2E Upgrade)",
+    "family": "Hinterlands",
+    "edition": "upgrade",
+    "cardCount": 9
+  },
+  {
+    "setId": "hinterlands2ndEdition",
+    "setName": "Hinterlands (2nd Edition)",
+    "family": "Hinterlands",
+    "edition": "2",
+    "cardCount": 26
+  },
+  {
+    "setId": "hinterlands1stEditionRemoved",
+    "setName": "Hinterlands (Removed from 2E)",
+    "family": "Hinterlands",
+    "edition": "removed",
+    "cardCount": 9
+  },
+  {
+    "setId": "intrigue1stEdition",
+    "setName": "Intrigue (1st Edition)",
+    "family": "Intrigue",
+    "edition": "1",
+    "cardCount": 34
+  },
+  {
+    "setId": "intrigue2ndEditionUpgrade",
+    "setName": "Intrigue (2E Upgrade)",
+    "family": "Intrigue",
+    "edition": "upgrade",
+    "cardCount": 7
+  },
+  {
+    "setId": "intrigue2ndEdition",
+    "setName": "Intrigue (2nd Edition)",
+    "family": "Intrigue",
+    "edition": "2",
+    "cardCount": 26
+  },
+  {
+    "setId": "intrigue1stEditionRemoved",
+    "setName": "Intrigue (Removed from 2E)",
+    "family": "Intrigue",
+    "edition": "removed",
+    "cardCount": 6
+  },
+  {
+    "setId": "menagerie",
+    "setName": "Menagerie (1st Edition)",
+    "family": "Menagerie",
+    "edition": "1",
+    "cardCount": 71
+  },
+  {
+    "setId": "nocturne",
+    "setName": "Nocturne (1st Edition)",
+    "family": "Nocturne",
+    "edition": "1",
+    "cardCount": 75
+  },
+  {
+    "setId": "plunder",
+    "setName": "Plunder (1st Edition)",
+    "family": "Plunder",
+    "edition": "1",
+    "cardCount": 71
+  },
+  {
+    "setId": "promo",
+    "setName": "Promo (1st Edition)",
+    "family": "Promo",
+    "edition": "1",
+    "cardCount": 14
+  },
+  {
+    "setId": "promo-bigbox2-de",
+    "setName": "Promo-bigbox2-de (1st Edition)",
+    "family": "Promo-bigbox2-de",
+    "edition": "1",
+    "cardCount": 4
+  },
+  {
+    "setId": "prosperity1stEdition",
+    "setName": "Prosperity (1st Edition)",
+    "family": "Prosperity",
+    "edition": "1",
+    "cardCount": 27
+  },
+  {
+    "setId": "prosperity2ndEditionUpgrade",
+    "setName": "Prosperity (2E Upgrade)",
+    "family": "Prosperity",
+    "edition": "upgrade",
+    "cardCount": 9
+  },
+  {
+    "setId": "prosperity2ndEdition",
+    "setName": "Prosperity (2nd Edition)",
+    "family": "Prosperity",
+    "edition": "2",
+    "cardCount": 27
+  },
+  {
+    "setId": "prosperity1stEditionRemoved",
+    "setName": "Prosperity (Removed from 2E)",
+    "family": "Prosperity",
+    "edition": "removed",
+    "cardCount": 9
+  },
+  {
+    "setId": "renaissance",
+    "setName": "Renaissance (1st Edition)",
+    "family": "Renaissance",
+    "edition": "1",
+    "cardCount": 50
+  },
+  {
+    "setId": "risingSun",
+    "setName": "Rising Sun (1st Edition)",
+    "family": "Rising Sun",
+    "edition": "1",
+    "cardCount": 50
+  },
+  {
+    "setId": "seaside1stEdition",
+    "setName": "Seaside (1st Edition)",
+    "family": "Seaside",
+    "edition": "1",
+    "cardCount": 26
+  },
+  {
+    "setId": "seaside2ndEditionUpgrade",
+    "setName": "Seaside (2E Upgrade)",
+    "family": "Seaside",
+    "edition": "upgrade",
+    "cardCount": 9
+  },
+  {
+    "setId": "seaside2ndEdition",
+    "setName": "Seaside (2nd Edition)",
+    "family": "Seaside",
+    "edition": "2",
+    "cardCount": 27
+  },
+  {
+    "setId": "seaside1stEditionRemoved",
+    "setName": "Seaside (Removed from 2E)",
+    "family": "Seaside",
+    "edition": "removed",
+    "cardCount": 8
+  }
+]
