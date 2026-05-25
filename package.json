@@ -2,6 +2,9 @@
   "name": "dominion-card-viewer",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "npm run build:catalog && next build",
@@ -19,7 +22,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
