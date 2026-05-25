@@ -3,7 +3,9 @@ import type {
   CatalogFilters,
   DominionCard,
   Edition,
+  RandomizerPoolFilters,
   SetFamily,
+  SetIndexEntry,
   SortField,
 } from "./types";
 
@@ -135,6 +137,48 @@ export function uniqueEditionsForCard(card: DominionCard): Edition[] {
     seen.add(s.edition);
   }
   return [...seen];
+}
+
+/** Clarifying labels for families whose name alone is ambiguous in the UI. */
+const FAMILY_EXTRA_LABELS: Record<string, string> = {
+  Base: "Supply Cards",
+};
+
+export function getFamilyExtraLabel(family: string): string | undefined {
+  return FAMILY_EXTRA_LABELS[family];
+}
+
+/** Big-box bundles, combined editions, and non-kingdom supply cards. */
+export function isRandomizerSetOption(entry: SetIndexEntry): boolean {
+  const id = entry.setId.toLowerCase();
+  const family = entry.family.toLowerCase();
+  if (family === "base" || id === "base") return false;
+  if (id.includes("bigbox") || family.includes("bigbox")) return false;
+  if (entry.family.includes(" and ")) return false;
+  return true;
+}
+
+export function filterFamiliesForRandomizer(families: SetFamily[]): SetFamily[] {
+  return families
+    .map(({ family, sets }) => ({
+      family,
+      sets: sets.filter(isRandomizerSetOption),
+    }))
+    .filter(({ sets }) => sets.length > 0);
+}
+
+export function sanitizeRandomizerPoolFilters(
+  filters: RandomizerPoolFilters,
+  families: SetFamily[],
+): RandomizerPoolFilters {
+  const options = filterFamiliesForRandomizer(families);
+  const validSetIds = new Set(options.flatMap((f) => f.sets.map((s) => s.setId)));
+  const validFamilies = new Set(options.map((f) => f.family));
+  return {
+    ...filters,
+    setIds: (filters.setIds ?? []).filter((id) => validSetIds.has(id)),
+    families: (filters.families ?? []).filter((f) => validFamilies.has(f)),
+  };
 }
 
 export function buildFamiliesFromIndex(

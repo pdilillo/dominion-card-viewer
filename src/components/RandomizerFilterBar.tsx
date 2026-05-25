@@ -1,5 +1,7 @@
 "use client";
 
+import { getFamilyExtraLabel } from "@/lib/catalog";
+import { familyColorStyle, getFamilyColor } from "@/lib/setFamilyColors";
 import type { AttackPreference, SetFamily } from "@/lib/types";
 
 type Props = {
@@ -52,18 +54,35 @@ export function RandomizerFilterBar({
         <div className="flex flex-wrap gap-2">
           {families.map(({ family }) => {
             const active = selectedFamilies.includes(family);
+            const familyColor = getFamilyColor(family);
+            const familyExtraLabel = getFamilyExtraLabel(family);
             return (
               <button
                 key={family}
                 type="button"
                 onClick={() => onFamilyToggle(family)}
-                className={`rounded-full border px-2.5 py-1 text-xs transition ${
+                style={familyColorStyle(family)}
+                className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition ${
                   active
-                    ? "border-[var(--accent)] bg-[var(--accent)]/20 text-[var(--accent)]"
-                    : "border-[var(--border)] text-[var(--muted)] hover:border-[var(--accent-dim)] hover:text-[var(--text)]"
+                    ? familyColor
+                      ? "border-[color:var(--family-color)] bg-[color-mix(in_srgb,var(--family-color)_22%,transparent)] text-[color:var(--family-color)]"
+                      : "border-[var(--accent)] bg-[var(--accent)]/20 text-[var(--accent)]"
+                    : familyColor
+                      ? "border-[var(--border)] text-[color:var(--family-color)] hover:border-[color:var(--family-color)]"
+                      : "border-[var(--border)] text-[var(--muted)] hover:border-[var(--accent-dim)] hover:text-[var(--text)]"
                 }`}
               >
+                {familyColor && (
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: familyColor }}
+                    aria-hidden
+                  />
+                )}
                 {family}
+                {familyExtraLabel && (
+                  <span className="font-normal opacity-70">· {familyExtraLabel}</span>
+                )}
               </button>
             );
           })}

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import catalogData from "@/data/catalog.json";
-import { sortCards } from "@/lib/catalog";
+import { filterFamiliesForRandomizer, sanitizeRandomizerPoolFilters, sortCards } from "@/lib/catalog";
 import {
   getEligibleKingdomPool,
   KINGDOM_SIZE,
@@ -25,12 +25,15 @@ import type {
 } from "@/lib/types";
 import { AppHeader } from "@/components/AppHeader";
 import { CardDetailModal } from "@/components/CardDetailModal";
+import { CardNameOverlay } from "@/components/CardNameOverlay";
 import { RandomizerFilterBar } from "@/components/RandomizerFilterBar";
 import { SavedKingdomsPanel } from "@/components/SavedKingdomsPanel";
 import { SetSidebar } from "@/components/SetSidebar";
+import { cardBorderStyle, getCardBorderGradient, hasCardTypeBorder } from "@/lib/cardTypeColors";
 
 const data = catalogData as CatalogData;
 const validCardIds = new Set(data.cards.map((card) => card.id));
+const randomizerFamilies = filterFamiliesForRandomizer(data.families);
 
 function toggleInList<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -52,12 +55,16 @@ export default function RandomizerPage() {
   const [error, setError] = useState<string | null>(null);
 
   const poolFilters = useMemo(
-    () => ({
-      setIds: selectedSetIds,
-      families: selectedFamilies,
-      editions: selectedEditions,
-      attackPreference,
-    }),
+    () =>
+      sanitizeRandomizerPoolFilters(
+        {
+          setIds: selectedSetIds,
+          families: selectedFamilies,
+          editions: selectedEditions,
+          attackPreference,
+        },
+        data.families,
+      ),
     [selectedSetIds, selectedFamilies, selectedEditions, attackPreference],
   );
 
@@ -111,10 +118,19 @@ export default function RandomizerPage() {
   );
 
   function applyPoolFilters(filters?: SavedKingdomSet["poolFilters"]) {
-    setSelectedSetIds(filters?.setIds ?? []);
-    setSelectedFamilies(filters?.families ?? []);
-    setSelectedEditions(filters?.editions ?? []);
-    setAttackPreference(filters?.attackPreference ?? "any");
+    const sanitized = sanitizeRandomizerPoolFilters(
+      {
+        setIds: filters?.setIds ?? [],
+        families: filters?.families ?? [],
+        editions: filters?.editions ?? [],
+        attackPreference: filters?.attackPreference ?? "any",
+      },
+      data.families,
+    );
+    setSelectedSetIds(sanitized.setIds ?? []);
+    setSelectedFamilies(sanitized.families ?? []);
+    setSelectedEditions(sanitized.editions ?? []);
+    setAttackPreference(sanitized.attackPreference ?? "any");
   }
 
   function handleLoadSaved(set: SavedKingdomSet) {
@@ -157,7 +173,7 @@ export default function RandomizerPage() {
 
       <div className="flex min-h-0 flex-1">
         <SetSidebar
-          families={data.families}
+          families={randomizerFamilies}
           selectedSetIds={selectedSetIds}
           selectedFamilies={selectedFamilies}
           selectedEditions={selectedEditions}
@@ -180,7 +196,7 @@ export default function RandomizerPage() {
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="space-y-3 border-b border-[var(--border)] bg-[var(--surface)] p-4">
             <RandomizerFilterBar
-              families={data.families}
+              families={randomizerFamilies}
               selectedFamilies={selectedFamilies}
               selectedSetIds={selectedSetIds}
               attackPreference={attackPreference}
@@ -306,6 +322,38 @@ export default function RandomizerPage() {
                   <div className="flex flex-wrap gap-3">
                     {kingdomCards.map((card) => {
                       const locked = lockedIds.includes(card.id);
+                      const borderGradient = getCardBorderGradient(card.types);
+                      const hasTypeBorder = hasCardTypeBorder(card.types);
+
+                      const cardImage = (
+                        <div
+                          className={`relative overflow-hidden ${
+                            borderGradient ? "rounded-[5px]" : "rounded-lg"
+                          }`}
+                          style={{ width: gridZoom }}
+                        >
+                          <img
+                            src={card.image}
+                            alt={card.name}
+                            width={gridZoom}
+                            className={`shadow-sm transition ${
+                              borderGradient
+                                ? "rounded-[5px] hover:brightness-110"
+                                : `rounded-lg border-[3px] ${
+                                    hasTypeBorder
+                                      ? "hover:brightness-110"
+                                      : "border-[var(--border)] hover:border-[var(--accent-dim)]"
+                                  }`
+                            }`}
+                            style={{
+                              width: gridZoom,
+                              ...(borderGradient ? undefined : cardBorderStyle(card.types)),
+                            }}
+                          />
+                          <CardNameOverlay name={card.name} />
+                        </div>
+                      );
+
                       return (
                         <div key={card.id} className="relative">
                           <button
@@ -313,13 +361,16 @@ export default function RandomizerPage() {
                             onClick={() => setSelectedCard(card)}
                             className="block text-left"
                           >
-                            <img
-                              src={card.image}
-                              alt={card.name}
-                              width={gridZoom}
-                              className="rounded-lg border border-[var(--border)] shadow-sm transition hover:border-[var(--accent-dim)]"
-                              style={{ width: gridZoom }}
-                            />
+                            {borderGradient ? (
+                              <div
+                                className="rounded-lg p-[3px] transition hover:brightness-110"
+                                style={{ background: borderGradient }}
+                              >
+                                {cardImage}
+                              </div>
+                            ) : (
+                              cardImage
+                            )}
                           </button>
                           <button
                             type="button"

@@ -1,7 +1,9 @@
 "use client";
 
+import type { CSSProperties } from "react";
+import { editionLabel, getFamilyExtraLabel } from "@/lib/catalog";
+import { familyColorStyle, getFamilyColor } from "@/lib/setFamilyColors";
 import type { SetFamily } from "@/lib/types";
-import { editionLabel } from "@/lib/catalog";
 
 type Props = {
   families: SetFamily[];
@@ -87,20 +89,44 @@ export function SetSidebar({
       <div className="flex-1 overflow-y-auto p-2">
         {families.map(({ family, sets }) => {
           const familyActive = selectedFamilies.includes(family);
+          const familyColor = getFamilyColor(family);
+          const familyExtraLabel = getFamilyExtraLabel(family);
           return (
             <div key={family} className="mb-3">
               <button
                 type="button"
                 onClick={() => onFamilyToggle(family)}
-                className={`mb-1 w-full rounded-lg px-2 py-1.5 text-left text-sm font-medium transition ${
+                style={familyColorStyle(family)}
+                className={`mb-1 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm font-medium transition ${
                   familyActive
-                    ? "bg-[var(--accent)]/15 text-[var(--accent)]"
-                    : "text-[var(--text)] hover:bg-[var(--surface-2)]"
+                    ? familyColor
+                      ? "bg-[color-mix(in_srgb,var(--family-color)_18%,transparent)] text-[color:var(--family-color)]"
+                      : "bg-[var(--accent)]/15 text-[var(--accent)]"
+                    : familyColor
+                      ? "text-[color:var(--family-color)] hover:bg-[color-mix(in_srgb,var(--family-color)_10%,transparent)]"
+                      : "text-[var(--text)] hover:bg-[var(--surface-2)]"
                 }`}
               >
+                {familyColor && (
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: familyColor }}
+                    aria-hidden
+                  />
+                )}
                 {family}
+                {familyExtraLabel && (
+                  <span className="font-normal opacity-70">· {familyExtraLabel}</span>
+                )}
               </button>
-              <ul className="ml-2 space-y-0.5 border-l border-[var(--border)] pl-2">
+              <ul
+                className="ml-2 space-y-0.5 border-l pl-2"
+                style={
+                  familyColor
+                    ? ({ borderColor: `color-mix(in srgb, ${familyColor} 35%, var(--border))` } as CSSProperties)
+                    : undefined
+                }
+              >
                 {sets.map((set) => {
                   const active = selectedSetIds.includes(set.setId);
                   return (
@@ -108,14 +134,26 @@ export function SetSidebar({
                       <button
                         type="button"
                         onClick={() => onSetToggle(set.setId)}
-                        className={`flex w-full items-center justify-between rounded px-2 py-1 text-left text-xs transition ${
+                        style={familyColorStyle(family)}
+                        className={`flex w-full items-center gap-2 rounded px-2 py-1 text-left text-xs transition ${
                           active
-                            ? "bg-[var(--accent)]/10 text-[var(--accent)]"
-                            : "text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                            ? familyColor
+                              ? "bg-[color-mix(in_srgb,var(--family-color)_14%,transparent)] text-[color:var(--family-color)]"
+                              : "bg-[var(--accent)]/10 text-[var(--accent)]"
+                            : familyColor
+                              ? "text-[color:var(--family-color)] hover:bg-[color-mix(in_srgb,var(--family-color)_10%,transparent)]"
+                              : "text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
                         }`}
                       >
-                        <span className="truncate">{set.setName}</span>
-                        <span className="ml-1 shrink-0 tabular-nums opacity-70">
+                        {familyColor && (
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ backgroundColor: familyColor }}
+                            aria-hidden
+                          />
+                        )}
+                        <span className="min-w-0 flex-1 truncate">{set.setName}</span>
+                        <span className="shrink-0 tabular-nums opacity-70">
                           {set.cardCount}
                         </span>
                       </button>
