@@ -21,12 +21,65 @@ function cardMatchesEdition(card: DominionCard, editions: Edition[]): boolean {
   return card.sets.some((s) => editions.includes(s.edition));
 }
 
-function cardMatchesSet(card: DominionCard, setIds: string[], families: string[]): boolean {
+/** 2E cards for these families live in the Cornucopia & Guilds combined box set. */
+const COMBINED_BOX_SET_ID = "cornucopiaAndGuilds2ndEdition";
+const FAMILIES_WITH_COMBINED_2E = new Set(["Cornucopia", "Guilds"]);
+
+function cardMatchesFamilyEdition(
+  card: DominionCard,
+  family: string,
+  edition: "1" | "2",
+): boolean {
+  if (family === "Cornucopia") {
+    if (edition === "1") {
+      return card.sets.some((s) => s.setId === "cornucopia1stEdition");
+    }
+    return (
+      card.sets.some((s) => s.setId === COMBINED_BOX_SET_ID) &&
+      (card.sets.some((s) => s.setId === "cornucopia1stEdition") ||
+        card.sets.some((s) => s.setId === "cornucopia2ndEditionUpgrade"))
+    );
+  }
+  if (family === "Guilds") {
+    if (edition === "1") {
+      return card.sets.some((s) => s.setId === "guilds1stEdition");
+    }
+    return (
+      card.sets.some((s) => s.setId === COMBINED_BOX_SET_ID) &&
+      (card.sets.some((s) => s.setId === "guilds1stEdition") ||
+        card.sets.some((s) => s.setId === "guilds2ndEditionUpgrade"))
+    );
+  }
+  return card.sets.some((s) => s.family === family && s.edition === edition);
+}
+
+function cardMatchesFamilyAnyEdition(card: DominionCard, family: string): boolean {
+  if (FAMILIES_WITH_COMBINED_2E.has(family)) {
+    return (
+      cardMatchesFamilyEdition(card, family, "1") ||
+      cardMatchesFamilyEdition(card, family, "2")
+    );
+  }
+  return card.sets.some((s) => s.family === family);
+}
+
+function cardMatchesSet(
+  card: DominionCard,
+  setIds: string[],
+  families: string[],
+  familyEditions?: Partial<Record<string, "1" | "2">>,
+): boolean {
   if (setIds.length === 0 && families.length === 0) return true;
   if (setIds.length > 0) {
     return card.sets.some((s) => setIds.includes(s.setId));
   }
-  return card.sets.some((s) => families.includes(s.family));
+  return families.some((family) => {
+    const editionPref = familyEditions?.[family];
+    if (!editionPref) {
+      return cardMatchesFamilyAnyEdition(card, family);
+    }
+    return cardMatchesFamilyEdition(card, family, editionPref);
+  });
 }
 
 function cardMatchesTypes(card: DominionCard, types: string[]): boolean {
@@ -40,12 +93,13 @@ export function filterCards(cards: DominionCard[], filters: CatalogFilters): Dom
   const families = filters.families ?? [];
   const editions = filters.editions ?? [];
   const types = filters.types ?? [];
+  const familyEditions = filters.familyEditions;
 
   return cards.filter((card) => {
     if (search && !card.name.toLowerCase().includes(search)) return false;
     if (filters.kingdomOnly && !card.isKingdomCard) return false;
     if (!cardMatchesEdition(card, editions)) return false;
-    if (!cardMatchesSet(card, setIds, families)) return false;
+    if (!cardMatchesSet(card, setIds, families, familyEditions)) return false;
     if (!cardMatchesTypes(card, types)) return false;
     return true;
   });
@@ -167,6 +221,12 @@ export function filterFamiliesForRandomizer(families: SetFamily[]): SetFamily[] 
     .filter(({ sets }) => sets.length > 0);
 }
 
+export function familyHasDualEditions(sets: SetIndexEntry[], family?: string): boolean {
+  if (family && FAMILIES_WITH_COMBINED_2E.has(family)) return true;
+  const editions = new Set(sets.map((s) => s.edition));
+  return editions.has("1") && editions.has("2");
+}
+
 export function sanitizeRandomizerPoolFilters(
   filters: RandomizerPoolFilters,
   families: SetFamily[],
@@ -174,10 +234,37 @@ export function sanitizeRandomizerPoolFilters(
   const options = filterFamiliesForRandomizer(families);
   const validSetIds = new Set(options.flatMap((f) => f.sets.map((s) => s.setId)));
   const validFamilies = new Set(options.map((f) => f.family));
+  const dualEditionFamilies = new Set(
+    options.filter((f) => familyHasDualEditions(f.sets, f.family)).map((f) => f.family),
+  );
+  let familyEditions = Object.fromEntries(
+    Object.entries(filters.familyEditions ?? {}).filter(
+      ([family, edition]) =>
+        validFamilies.has(family) &&
+        dualEditionFamilies.has(family) &&
+        (edition === "1" || edition === "2"),
+    ),
+  ) as Partial<Record<string, "1" | "2">>;
+
+  // Migrate legacy global edition filter from older saved kingdoms.
+  if (
+    Object.keys(familyEditions).length === 0 &&
+    filters.editions?.length === 1 &&
+    (filters.editions[0] === "1" || filters.editions[0] === "2")
+  ) {
+    const edition = filters.editions[0];
+    for (const family of (filters.families ?? []).filter((f) => validFamilies.has(f))) {
+      if (dualEditionFamilies.has(family)) {
+        familyEditions[family] = edition;
+      }
+    }
+  }
+
   return {
     ...filters,
     setIds: (filters.setIds ?? []).filter((id) => validSetIds.has(id)),
     families: (filters.families ?? []).filter((f) => validFamilies.has(f)),
+    familyEditions,
   };
 }
 

@@ -40,6 +40,8 @@ export type CatalogFilters = {
   setIds?: string[];
   families?: string[];
   editions?: Edition[];
+  /** When a family is selected, limit to this edition (1E or 2E). Omit = all editions. */
+  familyEditions?: Partial<Record<string, "1" | "2">>;
   types?: string[];
   kingdomOnly?: boolean;
 };

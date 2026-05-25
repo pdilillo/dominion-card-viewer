@@ -20,16 +20,18 @@ import type {
   AttackPreference,
   CatalogData,
   DominionCard,
-  Edition,
   SavedKingdomSet,
 } from "@/lib/types";
 import { AppHeader } from "@/components/AppHeader";
 import { CardDetailModal } from "@/components/CardDetailModal";
 import { CardNameOverlay } from "@/components/CardNameOverlay";
+import { MobileDrawer } from "@/components/MobileDrawer";
 import { RandomizerFilterBar } from "@/components/RandomizerFilterBar";
 import { SavedKingdomsPanel } from "@/components/SavedKingdomsPanel";
 import { SetSidebar } from "@/components/SetSidebar";
 import { cardBorderStyle, getCardBorderGradient, hasCardTypeBorder } from "@/lib/cardTypeColors";
+import { useIsDesktop } from "@/hooks/useMediaQuery";
+import { useResponsiveGridZoom } from "@/hooks/useResponsiveGridZoom";
 
 const data = catalogData as CatalogData;
 const validCardIds = new Set(data.cards.map((card) => card.id));
@@ -40,9 +42,10 @@ function toggleInList<T>(list: T[], value: T): T[] {
 }
 
 export default function RandomizerPage() {
+  const isDesktop = useIsDesktop();
   const [selectedSetIds, setSelectedSetIds] = useState<string[]>([]);
   const [selectedFamilies, setSelectedFamilies] = useState<string[]>([]);
-  const [selectedEditions, setSelectedEditions] = useState<Edition[]>([]);
+  const [familyEditions, setFamilyEditions] = useState<Partial<Record<string, "1" | "2">>>({});
   const [attackPreference, setAttackPreference] = useState<AttackPreference>("any");
   const [gridZoom, setGridZoom] = useState(160);
   const [kingdomCards, setKingdomCards] = useState<DominionCard[]>([]);
@@ -53,6 +56,10 @@ export default function RandomizerPage() {
   const [saveName, setSaveName] = useState("");
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [poolOpen, setPoolOpen] = useState(false);
+  const [savedOpen, setSavedOpen] = useState(false);
+
+  useResponsiveGridZoom(setGridZoom, 160, 150);
 
   const poolFilters = useMemo(
     () =>
@@ -60,12 +67,12 @@ export default function RandomizerPage() {
         {
           setIds: selectedSetIds,
           families: selectedFamilies,
-          editions: selectedEditions,
+          familyEditions,
           attackPreference,
         },
         data.families,
       ),
-    [selectedSetIds, selectedFamilies, selectedEditions, attackPreference],
+    [selectedSetIds, selectedFamilies, familyEditions, attackPreference],
   );
 
   const eligiblePool = useMemo(
@@ -74,6 +81,11 @@ export default function RandomizerPage() {
   );
 
   const costSpread = useMemo(() => summarizeCostSpread(kingdomCards), [kingdomCards]);
+
+  const hasPoolSelection =
+    selectedSetIds.length > 0 ||
+    selectedFamilies.length > 0 ||
+    Object.keys(familyEditions).length > 0;
 
   useEffect(() => {
     const loaded = loadSavedKingdoms()
@@ -122,15 +134,28 @@ export default function RandomizerPage() {
       {
         setIds: filters?.setIds ?? [],
         families: filters?.families ?? [],
-        editions: filters?.editions ?? [],
+        familyEditions: filters?.familyEditions ?? {},
         attackPreference: filters?.attackPreference ?? "any",
       },
       data.families,
     );
     setSelectedSetIds(sanitized.setIds ?? []);
     setSelectedFamilies(sanitized.families ?? []);
-    setSelectedEditions(sanitized.editions ?? []);
+    setFamilyEditions(sanitized.familyEditions ?? {});
     setAttackPreference(sanitized.attackPreference ?? "any");
+  }
+
+  function handleFamilyEditionChange(family: string, edition: "1" | "2" | undefined) {
+    setFamilyEditions((prev) => {
+      const next = { ...prev };
+      if (edition === undefined) {
+        delete next[family];
+      } else {
+        next[family] = edition;
+      }
+      return next;
+    });
+    setActiveSavedId(null);
   }
 
   function handleLoadSaved(set: SavedKingdomSet) {
@@ -141,6 +166,7 @@ export default function RandomizerPage() {
     applyPoolFilters(set.poolFilters);
     setError(null);
     setShowSaveForm(false);
+    setSavedOpen(false);
   }
 
   function handleDeleteSaved(id: string) {
@@ -167,31 +193,36 @@ export default function RandomizerPage() {
     setActiveSavedId(null);
   }
 
+  const sidebarProps = {
+    families: randomizerFamilies,
+    selectedSetIds,
+    selectedFamilies,
+    familyEditions,
+    editionMode: "per-family" as const,
+    title: "Kingdom pool",
+    setsSectionLabel: "Sets & editions",
+    onSetToggle: (id: string) => {
+      setSelectedSetIds((prev) => toggleInList(prev, id));
+      setActiveSavedId(null);
+    },
+    onFamilyToggle: (family: string) => {
+      setSelectedFamilies((prev) => toggleInList(prev, family));
+      setActiveSavedId(null);
+    },
+    onFamilyEditionChange: handleFamilyEditionChange,
+    onClearSets: () => {
+      setSelectedSetIds([]);
+      setSelectedFamilies([]);
+      setFamilyEditions({});
+    },
+  };
+
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       <AppHeader subtitle="Randomize a 10-card kingdom with balanced costs" />
 
       <div className="flex min-h-0 flex-1">
-        <SetSidebar
-          families={randomizerFamilies}
-          selectedSetIds={selectedSetIds}
-          selectedFamilies={selectedFamilies}
-          selectedEditions={selectedEditions}
-          title="Kingdom pool"
-          setsSectionLabel="Sets & editions"
-          onSetToggle={(id) => setSelectedSetIds((prev) => toggleInList(prev, id))}
-          onFamilyToggle={(family) =>
-            setSelectedFamilies((prev) => toggleInList(prev, family))
-          }
-          onEditionToggle={(edition) =>
-            setSelectedEditions((prev) => toggleInList(prev, edition))
-          }
-          onClearSets={() => {
-            setSelectedSetIds([]);
-            setSelectedFamilies([]);
-            setSelectedEditions([]);
-          }}
-        />
+        {isDesktop && <SetSidebar {...sidebarProps} />}
 
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="space-y-3 border-b border-[var(--border)] bg-[var(--surface)] p-4">
@@ -212,12 +243,38 @@ export default function RandomizerPage() {
               onClearSets={() => {
                 setSelectedSetIds([]);
                 setSelectedFamilies([]);
-                setSelectedEditions([]);
+                setFamilyEditions({});
                 setActiveSavedId(null);
               }}
             />
 
             <div className="flex flex-wrap items-center gap-3">
+              {!isDesktop && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setPoolOpen(true)}
+                    className="relative rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] transition hover:border-[var(--accent-dim)]"
+                  >
+                    Pool
+                    {hasPoolSelection && (
+                      <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSavedOpen(true)}
+                    className="relative rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] transition hover:border-[var(--accent-dim)]"
+                  >
+                    Saved
+                    {savedSets.length > 0 && (
+                      <span className="ml-1.5 rounded-full bg-[var(--accent)]/20 px-1.5 py-0.5 text-xs tabular-nums text-[var(--accent)]">
+                        {savedSets.length}
+                      </span>
+                    )}
+                  </button>
+                </>
+              )}
               <button
                 type="button"
                 onClick={() => generateKingdom()}
@@ -312,8 +369,8 @@ export default function RandomizerPage() {
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center text-[var(--muted)]">
                   <p>Select expansions to pull from, then randomize a kingdom.</p>
                   <p className="max-w-md text-sm">
-                    Choose expansions above or in the sidebar, set your attack
-                    preference, then generate 10 cards with a balanced $2–$6+
+                    Choose expansions above{isDesktop ? " or in the sidebar" : " or via Pool"},
+                    set your attack preference, then generate 10 cards with a balanced $2–$6+
                     cost spread.
                   </p>
                 </div>
@@ -375,14 +432,15 @@ export default function RandomizerPage() {
                           <button
                             type="button"
                             onClick={() => toggleLock(card.id)}
-                            className={`absolute right-1 top-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                            className={`absolute right-2 top-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-[10px] font-semibold uppercase tracking-wide ${
                               locked
                                 ? "bg-[var(--accent)] text-[#1a1200]"
                                 : "bg-[var(--surface)]/90 text-[var(--muted)] hover:text-[var(--text)]"
                             }`}
                             title={locked ? "Unlock card" : "Lock card when re-rolling"}
+                            aria-label={locked ? "Unlock card" : "Lock card when re-rolling"}
                           >
-                            {locked ? "Locked" : "Lock"}
+                            {locked ? "🔒" : "🔓"}
                           </button>
                         </div>
                       );
@@ -392,24 +450,41 @@ export default function RandomizerPage() {
               )}
             </div>
 
-            <aside className="flex w-72 shrink-0 flex-col border-l border-[var(--border)] bg-[var(--surface)]">
-              <div className="border-b border-[var(--border)] p-4">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
-                  Saved Kingdoms
-                </h2>
-              </div>
-              <div className="flex-1 overflow-y-auto p-4">
-                <SavedKingdomsPanel
-                  savedSets={savedSets}
-                  activeId={activeSavedId}
-                  onLoad={handleLoadSaved}
-                  onDelete={handleDeleteSaved}
-                />
-              </div>
-            </aside>
+            {isDesktop && (
+              <aside className="flex w-72 shrink-0 flex-col border-l border-[var(--border)] bg-[var(--surface)]">
+                <div className="border-b border-[var(--border)] p-4">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    Saved Kingdoms
+                  </h2>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4">
+                  <SavedKingdomsPanel
+                    savedSets={savedSets}
+                    activeId={activeSavedId}
+                    onLoad={handleLoadSaved}
+                    onDelete={handleDeleteSaved}
+                  />
+                </div>
+              </aside>
+            )}
           </div>
         </div>
       </div>
+
+      <MobileDrawer open={poolOpen} onClose={() => setPoolOpen(false)} title="Kingdom pool">
+        <SetSidebar {...sidebarProps} className="w-full border-r-0" hideHeader />
+      </MobileDrawer>
+
+      <MobileDrawer open={savedOpen} onClose={() => setSavedOpen(false)} title="Saved Kingdoms">
+        <div className="flex-1 overflow-y-auto p-4">
+          <SavedKingdomsPanel
+            savedSets={savedSets}
+            activeId={activeSavedId}
+            onLoad={handleLoadSaved}
+            onDelete={handleDeleteSaved}
+          />
+        </div>
+      </MobileDrawer>
 
       {selectedCard && (
         <CardDetailModal

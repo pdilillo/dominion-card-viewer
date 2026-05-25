@@ -1,77 +1,96 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { editionLabel, getFamilyExtraLabel } from "@/lib/catalog";
+import { editionLabel, familyHasDualEditions, getFamilyExtraLabel } from "@/lib/catalog";
 import { familyColorStyle, getFamilyColor } from "@/lib/setFamilyColors";
-import type { SetFamily } from "@/lib/types";
+import type { Edition, SetFamily } from "@/lib/types";
 
 type Props = {
   families: SetFamily[];
   selectedSetIds: string[];
   selectedFamilies: string[];
-  selectedEditions: import("@/lib/types").Edition[];
+  selectedEditions?: Edition[];
+  familyEditions?: Partial<Record<string, "1" | "2">>;
+  editionMode?: "global" | "per-family";
   onSetToggle: (setId: string) => void;
   onFamilyToggle: (family: string) => void;
-  onEditionToggle: (edition: import("@/lib/types").Edition) => void;
+  onEditionToggle?: (edition: Edition) => void;
+  onFamilyEditionChange?: (family: string, edition: "1" | "2" | undefined) => void;
   onClearSets: () => void;
   title?: string;
   setsSectionLabel?: string;
+  className?: string;
+  hideHeader?: boolean;
 };
 
-const EDITION_OPTIONS: import("@/lib/types").Edition[] = [
-  "1",
-  "2",
-  "removed",
-  "upgrade",
+const EDITION_OPTIONS: Edition[] = ["1", "2", "removed", "upgrade"];
+
+const PER_FAMILY_EDITION_OPTIONS = [
+  { value: undefined, label: "All" },
+  { value: "1" as const, label: "1E" },
+  { value: "2" as const, label: "2E" },
 ];
 
 export function SetSidebar({
   families,
   selectedSetIds,
   selectedFamilies,
-  selectedEditions,
+  selectedEditions = [],
+  familyEditions = {},
+  editionMode = "global",
   onSetToggle,
   onFamilyToggle,
   onEditionToggle,
+  onFamilyEditionChange,
   onClearSets,
   title = "Filters",
   setsSectionLabel = "Sets",
+  className = "w-72 shrink-0 border-r",
+  hideHeader = false,
 }: Props) {
+  const hasFamilyEditionSelection = Object.keys(familyEditions).length > 0;
   const hasSelection =
     selectedSetIds.length > 0 ||
     selectedFamilies.length > 0 ||
-    selectedEditions.length > 0;
+    selectedEditions.length > 0 ||
+    hasFamilyEditionSelection;
 
   return (
-    <aside className="flex h-full w-72 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--surface)]">
-      <div className="border-b border-[var(--border)] p-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
-          {title}
-        </h2>
-      </div>
-
-      <div className="border-b border-[var(--border)] p-4">
-        <p className="mb-2 text-xs font-medium text-[var(--muted)]">Edition</p>
-        <div className="flex flex-wrap gap-2">
-          {EDITION_OPTIONS.map((edition) => {
-            const active = selectedEditions.includes(edition);
-            return (
-              <button
-                key={edition}
-                type="button"
-                onClick={() => onEditionToggle(edition)}
-                className={`rounded-full border px-2.5 py-1 text-xs transition ${
-                  active
-                    ? "border-[var(--accent)] bg-[var(--accent)]/20 text-[var(--accent)]"
-                    : "border-[var(--border)] text-[var(--muted)] hover:border-[var(--accent-dim)]"
-                }`}
-              >
-                {editionLabel(edition)}
-              </button>
-            );
-          })}
+    <aside
+      className={`flex h-full flex-col border-[var(--border)] bg-[var(--surface)] ${className}`}
+    >
+      {!hideHeader && (
+        <div className="border-b border-[var(--border)] p-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
+            {title}
+          </h2>
         </div>
-      </div>
+      )}
+
+      {editionMode === "global" && onEditionToggle && (
+        <div className="border-b border-[var(--border)] p-4">
+          <p className="mb-2 text-xs font-medium text-[var(--muted)]">Edition</p>
+          <div className="flex flex-wrap gap-2">
+            {EDITION_OPTIONS.map((edition) => {
+              const active = selectedEditions.includes(edition);
+              return (
+                <button
+                  key={edition}
+                  type="button"
+                  onClick={() => onEditionToggle(edition)}
+                  className={`rounded-full border px-2.5 py-1 text-xs transition ${
+                    active
+                      ? "border-[var(--accent)] bg-[var(--accent)]/20 text-[var(--accent)]"
+                      : "border-[var(--border)] text-[var(--muted)] hover:border-[var(--accent-dim)]"
+                  }`}
+                >
+                  {editionLabel(edition)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-2">
         <p className="text-xs font-medium text-[var(--muted)]">{setsSectionLabel}</p>
@@ -91,6 +110,10 @@ export function SetSidebar({
           const familyActive = selectedFamilies.includes(family);
           const familyColor = getFamilyColor(family);
           const familyExtraLabel = getFamilyExtraLabel(family);
+          const showEditionPicker =
+            editionMode === "per-family" &&
+            onFamilyEditionChange &&
+            familyHasDualEditions(sets, family);
           return (
             <div key={family} className="mb-3">
               <button
@@ -119,6 +142,27 @@ export function SetSidebar({
                   <span className="font-normal opacity-70">· {familyExtraLabel}</span>
                 )}
               </button>
+              {showEditionPicker && (
+                <div className="mb-1 ml-2 flex flex-wrap gap-1">
+                  {PER_FAMILY_EDITION_OPTIONS.map(({ value, label }) => {
+                    const active = familyEditions[family] === value;
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => onFamilyEditionChange(family, value)}
+                        className={`rounded-full border px-2 py-0.5 text-[10px] transition ${
+                          active
+                            ? "border-[var(--accent)] bg-[var(--accent)]/20 text-[var(--accent)]"
+                            : "border-[var(--border)] text-[var(--muted)] hover:border-[var(--accent-dim)]"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               <ul
                 className="ml-2 space-y-0.5 border-l pl-2"
                 style={

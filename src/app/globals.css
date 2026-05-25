@@ -81,3 +81,7 @@ input[type="range"] {
   background-color: color-mix(in srgb, var(--accent) 20%, transparent);
   color: var(--accent);
 }
+
+.mobile-drawer-panel {
+  padding-bottom: env(safe-area-inset-bottom);
+}

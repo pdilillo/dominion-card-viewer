@@ -29,3 +29,22 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run build` | Build catalog + production Next.js bundle |
 
 See [DATA_SOURCES.md](./DATA_SOURCES.md) for attribution and data provenance.
+
+## Deployment
+
+The app is deployed to GitHub Pages at [https://pdilillo.github.io/dominion-card-viewer/](https://pdilillo.github.io/dominion-card-viewer/).
+
+Pushes to `main` trigger the GitHub Actions workflow in [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which builds a static export and publishes the `out/` directory.
+
+### One-time GitHub setup
+
+In the repo **Settings → Pages → Build and deployment**, set the source to **GitHub Actions**.
+
+### Local production preview
+
+```bash
+GITHUB_PAGES=true npm run build
+npx serve out
+```
+
+Open [http://localhost:3000/dominion-card-viewer/](http://localhost:3000/dominion-card-viewer/).
